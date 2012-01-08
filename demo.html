@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Did you mean?</title>
+    
+    <script src="didYouMean.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+    
+    <link rel="stylesheet" href="http://twitter.github.com/bootstrap/1.4.0/bootstrap.min.css">
+    <style>
+      textarea {
+        width: 310px;
+        height: 50px;
+      }
+      .label { margin-right: 10px; }
+      #submit { margin-top: 5px; }
+    </style>
+    
+    <script type="text/javascript">
+      var words = [];
+      var tree = null;
+      
+      function findRelatedResults(query) {
+        // Update the corpus of words to search on
+        words = $('#words').val().split(',');
+        for(var i = 0; i < words.length; i++) {
+          words[i] = words[i].replace(/^\s+|\s+$/g, '');
+        }
+        
+        // Search the tree
+        var tree = new DidYouMean(words);
+        return tree.query(query);
+      }
+
+      $(function() {
+        $('#submit').click(function() {
+          var query = $('#query').val().replace(/^\s+|\s+$/g, '');
+		      var results = findRelatedResults(query);
+		      var hasQuery = results.indexOf(query) != -1;
+		      
+		      if (results.length && hasQuery) {
+		        $('#couldntfind, #results').hide();
+  		      $('#found').show();
+		      } else if (results.length && !hasQuery) {
+		        var resultsText = '';
+		        for(var i = 0; i < results.length; i++) {
+		          resultsText += '<span class="label success">' + results[i] + '</span>';
+		        }
+		        
+		        $('#results').html(resultsText);
+		        $('#couldntfind, #results').show();
+		        $('#found').hide();
+		      } else {
+		        $('#results').html('<span class="label important">No results</span>');
+		        $('#couldntfind, #results').show();
+		        $('#found').hide();
+		      }
+        });
+        
+        $('#submit').click();
+      });
+    </script>
+  </head>
+  
+  <body>
+    <div class="container">
+      <div class="row">
+        <div class="span6">
+        <h3>Words to search on:</h3>
+        <textarea id="words" rows="4" cols="40">badges, checkins, checkin, friends, lists, mayorships, photos, tips, todos, venuehistory</textarea>
+        </div>
+    
+        <div class="span4">
+          <h3>Query:</h3>
+          <input type="text" id="query" value="chickins" />
+          <input type="submit" id="submit" class="btn primary" />
+        </div>
+      </div>
+      
+      <hr />
+      
+      <div class="row">
+        <div class="span16 alert-message warning">
+          <p id="couldntfind" style="display:none;">
+            <strong>We couldn't find what you were searching for</strong><br /> Is it possible you meant one of these terms:
+          </p>
+          <p id="found" style="display:none;">
+            <strong>Looks like your search term is valid!</strong>
+          </p>
+          <div id="results" style="display: none;"></div>
+        </div>
+      </div>
+    </div>
+    
+  </body>
+</html>
